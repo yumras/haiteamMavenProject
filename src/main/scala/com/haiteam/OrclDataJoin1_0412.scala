@@ -4,48 +4,51 @@ import org.apache.spark.sql.SparkSession
 
 object OrclDataJoin1_0412 {
   def main(args: Array[String]): Unit = {
-    val spark = SparkSession.builder().appName("hkProject").
-      config("spark.master", "local").
-      getOrCreate()
+    val spark = SparkSession.builder().config("spark.master","local").getOrCreate()
 
-    //oracle connection
+    // oracle connection
     var staticUrl = "jdbc:oracle:thin:@192.168.110.111:1521/orcl"
 
-    var staticUser = "kopo"
+    var staticUser = "kpo"
     var staticPw = "kopo"
     var selloutDb = "kopo_channel_seasonality_new"
-    var masterDb = "kopo_product_mst"
+    var productNameDb = "kopo_product_mst"
 
-    val selloutDf = spark.read.format("jdbc").option("encoding", "UTF-8").
-      options(Map("url" -> staticUrl, "dbtable" -> selloutDb, "user" -> staticUser, "password" -> staticPw)).load
+    val selloutDf = spark.read.format("jdbc").
+      options(Map("url" -> staticUrl, "dbtable" -> selloutDb,
+        "user" -> staticUser,
+        "password" -> staticPw)).load
 
-    val mstDf = spark.read.format("jdbc").option("encoding", "UTF-8").
-      options(Map("url" -> staticUrl, "dbtable" -> masterDb, "user" -> staticUser, "password" -> staticPw)).load
+    val productMasterDf = spark.read.format("jdbc").
+      options(Map("url" -> staticUrl, "dbtable" -> productNameDb,
+        "user" -> staticUser,
+        "password" -> staticPw)).load
 
     selloutDf.createOrReplaceTempView("selloutTable")
+    productMasterDf.createOrReplaceTempView("mstTable")
 
-    mstDf.createOrReplaceTempView("mstTable")
-
-    var resultDf = spark.sql("select " +
-      "concat(a.regionid,'_',a.product) as KEYCOL," +
-      "a.regionid AS ACCOUNTID, " +
-      "a.product AS PRODUCT, " +
-      "a.yearweek AS YEARWEEK, " +
-      "cast(qty as double) AS QTY, " +
-      "b.product_name AS PRODUCT_NAME " +
-      "from selloutTable A " +
-      "left join mstTable B " +
+    var rawData = spark.sql("select " +
+      "concat(a.regionid,'_',a.product) as keycol, " +
+      "a.regionid as accountid, " +
+      "a.product, " +
+      "a.yearweek, " +
+      "cast(a.qty as double) as qty, " +
+      "b.product_name " +
+      "from selloutTable a " +
+      "left join mstTable b " +
       "on a.product = b.product_id")
 
-    var resultDfColumns = resultDf.columns.map(x=>{ x.toLowerCase() })
+    rawData.show(2)
 
-    var keyNo = resultDfColumns.indexOf("keycol")
-    var accountidNo = resultDfColumns.indexOf("accountid")
-    var productNo = resultDfColumns.indexOf("product")
-    var yearweekNo = resultDfColumns.indexOf("yearweek")
-    var qtyNo = resultDfColumns.indexOf("qty")
-    var product_nameNo = resultDfColumns.indexOf("product_name")
+    var rawDataColumns = rawData.columns
+    var keyNo = rawDataColumns.indexOf("keycol")
+    var accountidNo = rawDataColumns.indexOf("accountid")
+    var productNo = rawDataColumns.indexOf("product")
+    var yearweekNo = rawDataColumns.indexOf("yearweek")
+    var qtyNo = rawDataColumns.indexOf("qty")
+    var productnameNo = rawDataColumns.indexOf("productname")
 
+    var rawRdd = rawData.rdd
 
   }
 }
