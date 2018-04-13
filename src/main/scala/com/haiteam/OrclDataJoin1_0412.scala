@@ -61,5 +61,21 @@ object OrclDataJoin1_0412 {
       checkValid
     })
 
+    //실습
+    var filterex2Rdd = rawRdd.filter(x=>{
+      var checkValid = true
+      if (x.getString(yearweekNo).substring(4).toInt > 52) {
+        checkValid = false;
+      }
+      checkValid
+    })
+    var x =filterex2Rdd.first
+
+//    // checkValid 제거하고 한 버전(빠르지만 가독성 떨어짐)
+//    var filterex2Rdd = rawRdd.filter(x=>{
+//      (x.getString(yearweekNo).substring(4).toInt <= 52)
+//    })
+//    var x =filterex2Rdd.first
+
   }
 }
