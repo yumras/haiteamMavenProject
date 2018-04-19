@@ -2,7 +2,7 @@ package com.haiteam
 
 import org.apache.spark.sql.SparkSession
 
-object OrclDataJoin1_0412 {
+object OrclDataJoinRDD_0419 {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder().config("spark.master","local").getOrCreate()
 
@@ -80,6 +80,46 @@ object OrclDataJoin1_0412 {
     //      (x.getString(yearweekNo).substring(4).toInt <= 52)
     //    })
     //    var x =filterex2Rdd.first
+
+    //실습2 (상품정보가 PRODUCT1,2인 정보만 필터링) - (추천 방법)
+    // 분석대상 제품군 등록
+    var productArray = Array("PRODUCT1", "PRODUCT2")
+    // 세트 타입으로 변환
+    var productSet = productArray.toSet
+
+    var resultRdd = rawRdd.filter(x=>{
+      var checkValid = true
+      // 데이터 특정 행의 product 컬럼인덱스를 활용하여 데이터 대입
+      var productInfo = x.getString(productNo)
+      if(productSet.contains(productInfo)){
+        checkValid = true
+      }
+      checkValid
+    })
+
+    //실습2 (상품정보가 PRODUCT1,2인 정보만 필터링)
+    // - (비추천 방법: if 여러개 돌리게 되면 비효율적)
+    var filterex2Rdd = rawRdd.filter(x=>{
+      var checkValid = false
+      if((x.getString(productNo) == "PRODUCT1") ||
+        (x.getString(productNo) == "PRODUCT2")) {
+        checkValid = true;
+      }
+      checkValid
+    })
+
+    var ans =filterex2Rdd.first
+
+
+
+    // RDD 값 화면 출력
+    filterex2Rdd.take(3).foreach(println)
+    filterex2Rdd.collect.toArray.foreach(println)
+
+
+
+
+
 
   }
 }
