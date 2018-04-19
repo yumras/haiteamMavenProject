@@ -1,6 +1,7 @@
 package com.haiteam
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.{StringType, DoubleType, StructField, StructType}
 
 object OrclDataJoinRDD_0419 {
   def main(args: Array[String]): Unit = {
@@ -122,7 +123,30 @@ object OrclDataJoinRDD_0419 {
     filterex2Rdd.collect.toArray.foreach(println)
 
 
+    var filterex3Rdd = rawRdd.filter(x=>{
+      var checkValid = false
+      if((x.getString(yearweekNo).substring(0,4).toInt >= 2016) &&
+        (x.getString(yearweekNo).substring(4).toInt != 53) &&
+        (x.getString(productNo) == "PRODUCT1") ||
+        (x.getString(productNo) == "PRODUCT2")) {
+        checkValid = true;
+      }
+      checkValid
+    })
 
+    // Rdd를 DataFrame으로 저장하기
+    // ( import org.apache.spark.sql.types.{StringType,
+    // DoubleType, StructField, StructType} 필요)
+
+    val finalResultDf = spark.createDataFrame(resultRdd,
+      StructType(
+        Seq(
+          StructField("KEY", StringType),
+          StructField("REGIONID", StringType),
+          StructField("PRODUCT", StringType),
+          StructField("YEARWEEK", StringType),
+          StructField("VOLUME", DoubleType),
+          StructField("PRODUCTNAME", StringType))))
 
 
 
