@@ -56,6 +56,8 @@ object OrclDataJoin1_0412 {
     var rawRdd = rawData.rdd
 
     // 설정 부적합 로직 정제
+    // 처음 checkValid = true면 다 살리고 if로직에서 뺄것을 false로
+    // 처음 checkValid = false면 다 지우고 if로직에서 더할것을 true로
     var rawExRdd = rawRdd.filter(x=>{
       var checkValid = true
       // 설정 부적합 로직

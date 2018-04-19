@@ -56,6 +56,8 @@ object OrclDataJoinRDD_0419 {
     var rawRdd = rawData.rdd
 
     // 설정 부적합 로직 정제
+    // 처음 checkValid = true면 다 살리고 if로직에서 뺄것을 false로
+    // 처음 checkValid = false면 다 지우고 if로직에서 더할것을 true로
     var rawExRdd = rawRdd.filter(x=>{
       var checkValid = true
       // 설정 부적합 로직
@@ -88,7 +90,7 @@ object OrclDataJoinRDD_0419 {
     var productSet = productArray.toSet
 
     var resultRdd = rawRdd.filter(x=>{
-      var checkValid = true
+      var checkValid = false
       // 데이터 특정 행의 product 컬럼인덱스를 활용하여 데이터 대입
       var productInfo = x.getString(productNo)
       if(productSet.contains(productInfo)){
@@ -96,6 +98,9 @@ object OrclDataJoinRDD_0419 {
       }
       checkValid
     })
+
+    resultRdd.first
+    resultRdd.count
 
     //실습2 (상품정보가 PRODUCT1,2인 정보만 필터링)
     // - (비추천 방법: if 여러개 돌리게 되면 비효율적)
@@ -108,8 +113,8 @@ object OrclDataJoinRDD_0419 {
       checkValid
     })
 
-    var ans =filterex2Rdd.first
-
+    var ans = filterex2Rdd.first
+    filterex2Rdd.count
 
 
     // RDD 값 화면 출력
